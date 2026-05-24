@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from routers import users
-from database import supabase
+from dotenv import load_dotenv
+from routers import users, projects
+ 
+load_dotenv() 
 
 # Create FastAPI app
 app = FastAPI(
@@ -20,7 +21,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 app.include_router(users.router) 
+app.include_router(projects.router) 
+
 
 # Health check endpoints
 @app.get("/")
@@ -33,15 +37,6 @@ async def health_check():
         "status": "healthy",
         "version": "1.0.0"
     }
-
-@app.get("/posts")
-async def get_posts():
-    """ Get all posts from the database """
-    try:
-        response = supabase.table("posts").select("*").order("created_at", desc=True).execute()
-        return response.data
-    except Exception as e:
-       raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
